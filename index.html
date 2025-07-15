@@ -1,0 +1,3143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NISBA Cost Analysis</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Fix potential CSS issues */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-blue: #1e3a8a;
+            --secondary-blue: #3b82f6;
+            --accent-gold: #f59e0b;
+            --light-blue: #eff6ff;
+            --dark-blue: #1e1b4b;
+            --warm-gray: #374151;
+            --light-gray: #9ca3af;
+            --white: #ffffff;
+            --success-green: #10b981;
+            --warning-orange: #f97316;
+            --danger-red: #ef4444;
+            --gradient: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            --shadow: 0 10px 30px rgba(30, 58, 138, 0.1);
+            --shadow-hover: 0 15px 40px rgba(30, 58, 138, 0.2);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--warm-gray);
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--white);
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            overflow-y: auto;
+            transform: translateX(0); /* Open by default on desktop */
+            transition: transform 0.3s ease;
+        }
+
+        /* Desktop sidebar always visible */
+        @media (min-width: 769px) {
+            .sidebar {
+                transform: translateX(0);
+            }
+        }
+
+        /* Mobile sidebar hidden by default */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+        }
+
+        .sidebar-header {
+            padding: 2rem;
+            border-bottom: 1px solid #e5e7eb;
+            background: var(--gradient);
+            color: white;
+        }
+
+        .sidebar-logo {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .sidebar-nav-item {
+            display: block;
+            padding: 1rem 2rem;
+            color: var(--warm-gray);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+            cursor: pointer;
+        }
+
+        .sidebar-nav-item:hover {
+            background: var(--light-blue);
+            color: var(--primary-blue);
+            border-left-color: var(--primary-blue);
+        }
+
+        .sidebar-nav-item.active {
+            background: var(--light-blue);
+            color: var(--primary-blue);
+            border-left-color: var(--primary-blue);
+            font-weight: 600;
+        }
+
+        .sidebar-nav-item i {
+            margin-right: 0.75rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem 2rem;
+            border-top: 1px solid #e5e7eb;
+            background: #f8fafc;
+        }
+
+        .cost-badge-sidebar {
+            background: var(--warning-orange);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-align: center;
+            display: block;
+        }
+
+        /* Header with Menu Toggle */
+        .header {
+            background: var(--white);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            padding-left: 280px; /* Default desktop layout */
+            transition: padding-left 0.3s ease;
+        }
+
+        /* Mobile header adjustment */
+        @media (max-width: 768px) {
+            .header {
+                padding-left: 0;
+            }
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--warm-gray);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: none; /* Hidden on desktop by default */
+        }
+
+        /* Show menu toggle only on mobile */
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+        }
+
+        .menu-toggle:hover {
+            background: var(--light-blue);
+            color: var(--primary-blue);
+        }
+
+        .header-logo {
+            font-size: 2rem;
+            font-weight: bold;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .export-btn {
+            padding: 0.5rem 1rem;
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .export-btn:hover {
+            background: var(--secondary-blue);
+            transform: translateY(-1px);
+        }
+
+        /* Main Content with Sidebar */
+        .main {
+            padding: 2rem 0;
+            margin-left: 280px; /* Default desktop layout */
+            transition: margin-left 0.3s ease;
+        }
+
+        /* Mobile main content adjustment */
+        @media (max-width: 768px) {
+            .main {
+                margin-left: 0;
+            }
+        }
+
+        /* Sidebar Overlay for Mobile Only */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            display: none; /* Hidden on desktop */
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-overlay {
+                display: block;
+            }
+            
+            .sidebar-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+        }
+
+        /* Islamic Design Elements */
+        .islamic-pattern {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .islamic-pattern::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="islamic" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="%23EFF6FF" opacity="0.3"/></pattern></defs><rect width="100" height="100" fill="url(%23islamic)"/></svg>') repeat;
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        /* Main Content */
+        .main {
+            padding: 2rem 0;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            text-align: center;
+            padding: 4rem 0;
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 3rem;
+        }
+
+        .hero-content h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-content .subtitle {
+            font-size: 1.3rem;
+            color: var(--light-gray);
+            margin-bottom: 2rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .total-cost-highlight {
+            background: var(--light-blue);
+            padding: 2rem;
+            border-radius: 15px;
+            border-left: 5px solid var(--primary-blue);
+            margin: 2rem auto;
+            max-width: 600px;
+        }
+
+        .total-amount {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .cost-period {
+            color: var(--warm-gray);
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .cost-breakdown-summary {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .cost-item {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .cost-percentage {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+        }
+
+        .cost-label {
+            font-size: 0.9rem;
+            color: var(--warm-gray);
+        }
+
+        /* Section Styles */
+        .section {
+            background: var(--white);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .section-icon {
+            background: var(--gradient);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            color: var(--warm-gray);
+            margin: 0;
+        }
+
+        /* Cost Category Cards */
+        .cost-category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .cost-category-card {
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 2rem;
+            border-left: 5px solid var(--primary-blue);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .cost-category-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+            border-left-color: var(--accent-gold);
+        }
+
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .category-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+            line-height: 1.3;
+        }
+
+        .category-amount {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--warm-gray);
+            line-height: 1.2;
+        }
+
+        .category-percentage {
+            background: var(--primary-blue);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .category-description {
+            color: var(--light-gray);
+            font-size: 0.95rem;
+            line-height: 1.4;
+            flex-grow: 1;
+        }
+
+        /* Interactive Cost Tables */
+        .cost-table-container {
+            overflow-x: auto;
+            margin: 2rem 0;
+            background: var(--white);
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .cost-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+            table-layout: auto;
+        }
+
+        .cost-table th,
+        .cost-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: top;
+            word-wrap: break-word;
+        }
+
+        .cost-table th {
+            background: var(--primary-blue);
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .cost-table tr:hover {
+            background: var(--light-blue);
+        }
+
+        .cost-table .amount {
+            font-weight: bold;
+            color: var(--primary-blue);
+            white-space: nowrap;
+        }
+
+        .cost-table .duration {
+            color: var(--light-gray);
+            font-size: 0.9rem;
+        }
+
+        /* Phase Timeline */
+        .phase-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .phase-card {
+            background: var(--white);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            border-left: 5px solid var(--success-green);
+            transition: all 0.3s ease;
+        }
+
+        .phase-card:nth-child(2) {
+            border-left-color: var(--warning-orange);
+        }
+
+        .phase-card:nth-child(3) {
+            border-left-color: var(--secondary-blue);
+        }
+
+        .phase-card:nth-child(4) {
+            border-left-color: var(--accent-gold);
+        }
+
+        .phase-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .phase-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .phase-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+        }
+
+        .phase-cost {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--warm-gray);
+        }
+
+        .phase-percentage {
+            background: var(--light-blue);
+            color: var(--primary-blue);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .phase-breakdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .breakdown-item {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .breakdown-amount {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .breakdown-label {
+            font-size: 0.9rem;
+            color: var(--light-gray);
+        }
+
+        /* Risk Analysis */
+        .risk-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .risk-category {
+            background: #fef3f2;
+            border-radius: 15px;
+            padding: 2rem;
+            border-left: 5px solid var(--danger-red);
+        }
+
+        .risk-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--danger-red);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .risk-items {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .risk-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            border-left: 3px solid var(--danger-red);
+        }
+
+        .risk-name {
+            font-weight: bold;
+            color: var(--warm-gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .risk-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: var(--light-gray);
+        }
+
+        .risk-cost {
+            font-weight: bold;
+            color: var(--danger-red);
+        }
+
+        /* Optimization Strategies */
+        .optimization-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .optimization-card {
+            background: #f0fdf4;
+            border-radius: 15px;
+            padding: 2rem;
+            border-left: 5px solid var(--success-green);
+        }
+
+        .optimization-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--success-green);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .savings-amount {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--success-green);
+            margin-bottom: 1rem;
+        }
+
+        /* ROI Analysis */
+        .roi-timeline {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .roi-year {
+            background: var(--white);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border-top: 5px solid var(--primary-blue);
+        }
+
+        .roi-year.profitable {
+            border-top-color: var(--success-green);
+        }
+
+        .year-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+        }
+
+        .roi-metrics {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .roi-metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .roi-metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            font-weight: 600;
+            color: var(--warm-gray);
+        }
+
+        .metric-value {
+            font-weight: bold;
+            color: var(--primary-blue);
+        }
+
+        .metric-value.negative {
+            color: var(--danger-red);
+        }
+
+        .metric-value.positive {
+            color: var(--success-green);
+        }
+
+        /* Interactive Controls */
+        .controls-panel {
+            background: var(--light-blue);
+            padding: 2rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .control-btn {
+            padding: 0.75rem 1.5rem;
+            border: 2px solid var(--primary-blue);
+            background: var(--white);
+            color: var(--primary-blue);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .control-btn.active,
+        .control-btn:hover {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        /* Collapsible Sections */
+        .section-collapsible {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 1rem;
+            background: var(--light-blue);
+            color: var(--primary-blue);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 2rem;
+        }
+
+        .section-collapsible:hover {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        /* Summary Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .summary-card {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            border-top: 4px solid var(--primary-blue);
+            transition: all 0.3s ease;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .summary-icon {
+            background: var(--gradient);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+        }
+
+        .summary-amount {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-label {
+            color: var(--warm-gray);
+            font-weight: 600;
+        }
+
+        /* Back to Top Button */
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            background: var(--gradient);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .nav-links {
+                position: fixed;
+                top: 80px;
+                left: 0;
+                right: 0;
+                background: var(--white);
+                flex-direction: column;
+                padding: 2rem;
+                box-shadow: var(--shadow);
+                transform: translateY(-100%);
+                opacity: 0;
+                transition: all 0.3s ease;
+                z-index: 1000;
+            }
+
+            .nav-links.mobile-open {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            .hero-content h1 {
+                font-size: 2.5rem;
+                line-height: 1.2;
+            }
+
+            .section-title {
+                font-size: 1.5rem;
+            }
+
+            .section {
+                padding: 2rem 1.5rem;
+                margin-bottom: 1rem;
+            }
+
+            .container {
+                padding: 0 1rem;
+            }
+
+            .cost-breakdown-summary {
+                grid-template-columns: 1fr;
+            }
+
+            .cost-category-grid,
+            .optimization-grid,
+            .risk-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .roi-timeline {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .phase-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .phase-breakdown {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.5rem;
+            }
+
+            .control-group {
+                justify-content: center;
+            }
+
+            .total-amount {
+                font-size: 2.5rem;
+            }
+
+            .back-to-top {
+                bottom: 1rem;
+                right: 1rem;
+                width: 45px;
+                height: 45px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+
+            .section {
+                padding: 1.5rem 1rem;
+            }
+
+            .total-amount {
+                font-size: 2rem;
+            }
+
+            .phase-breakdown {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .cost-category-card:hover .category-amount {
+            animation: pulse 1s ease-in-out;
+        }
+
+        /* Text and Content Fixes */
+        .section-title,
+        .category-title,
+        .phase-title,
+        .year-title,
+        .metric-label,
+        .metric-value {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+        }
+
+        /* Ensure proper text rendering */
+        .total-amount,
+        .category-amount,
+        .phase-cost,
+        .savings-amount,
+        .summary-amount {
+            font-feature-settings: "tnum" 1;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        /* Fix any potential flexbox issues */
+        .phase-header,
+        .category-header,
+        .roi-metric {
+            min-width: 0; /* Allows flex items to shrink below content size */
+        }
+
+        /* Ensure containers don't overflow */
+        .section,
+        .cost-table-container,
+        .phase-card,
+        .roi-year {
+            max-width: 100%;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">NISBA</div>
+            <div class="sidebar-subtitle">Cost Analysis</div>
+        </div>
+        <div class="sidebar-nav">
+            <a class="sidebar-nav-item active" onclick="scrollToSection('overview')" data-section="overview">
+                <i class="fas fa-chart-pie"></i>
+                Overview
+            </a>
+            <a class="sidebar-nav-item" onclick="scrollToSection('team-costs')" data-section="team-costs">
+                <i class="fas fa-users-cog"></i>
+                Team Costs
+            </a>
+            <a class="sidebar-nav-item" onclick="scrollToSection('infrastructure')" data-section="infrastructure">
+                <i class="fas fa-server"></i>
+                Infrastructure
+            </a>
+            <a class="sidebar-nav-item" onclick="scrollToSection('content-creation')" data-section="content-creation">
+                <i class="fas fa-graduation-cap"></i>
+                Content
+            </a>
+            <a class="sidebar-nav-item" onclick="scrollToSection('marketing')" data-section="marketing">
+                <i class="fas fa-bullhorn"></i>
+                Marketing
+            </a>
+            <a class="sidebar-nav-item" onclick="scrollToSection('phases')" data-section="phases">
+                <i class="fas fa-tasks"></i>
+                Development Phases
+            </a>
+            <a class="sidebar-nav-item" onclick="scrollToSection('risks')" data-section="risks">
+                <i class="fas fa-shield-alt"></i>
+                Risk Analysis
+            </a>
+            <a class="sidebar-nav-item" onclick="scrollToSection('optimization')" data-section="optimization">
+                <i class="fas fa-chart-line"></i>
+                Cost Optimization
+            </a>
+            <a class="sidebar-nav-item" onclick="scrollToSection('roi')" data-section="roi">
+                <i class="fas fa-chart-bar"></i>
+                ROI Analysis
+            </a>
+        </div>
+        <div class="sidebar-footer">
+            <div class="cost-badge-sidebar">COST ANALYSIS</div>
+        </div>
+    </nav>
+
+    <header class="header" id="header">
+        <nav class="nav">
+            <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="header-logo">NISBA</div>
+            <div class="header-actions">
+                <button class="export-btn" onclick="exportAnalysis()">
+                    <i class="fas fa-download"></i>
+                    Export
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main" id="mainContent">
+        <div class="container">
+            <!-- Hero Section -->
+            <section class="hero-section islamic-pattern">
+                <div class="hero-content">
+                    <h1>NISBA Cost Analysis</h1>
+                    <p class="subtitle">Comprehensive Budget & Resource Planning</p>
+                    <div class="total-cost-highlight">
+                        <div class="total-amount">£750,000</div>
+                        <div class="cost-period">Total estimated development cost over 12 months</div>
+                        <div class="cost-breakdown-summary">
+                            <div class="cost-item">
+                                <div class="cost-percentage">60%</div>
+                                <div class="cost-label">Development Team</div>
+                            </div>
+                            <div class="cost-item">
+                                <div class="cost-percentage">15%</div>
+                                <div class="cost-label">Technology Infrastructure</div>
+                            </div>
+                            <div class="cost-item">
+                                <div class="cost-percentage">15%</div>
+                                <div class="cost-label">Content & Education</div>
+                            </div>
+                            <div class="cost-item">
+                                <div class="cost-percentage">10%</div>
+                                <div class="cost-label">Marketing & Launch</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Executive Summary -->
+            <section id="overview" class="section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <h2 class="section-title">Executive Summary</h2>
+                </div>
+                
+                <p style="font-size: 1.1rem; margin-bottom: 2rem;">This document provides a detailed analysis of the development costs for building the NISBA platform from concept to market-ready product. The total estimated development cost is <strong>£750,000</strong> over 12 months, covering all aspects of platform development, content creation, and initial market launch.</p>
+
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <div class="summary-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="summary-amount">£450,000</div>
+                        <div class="summary-label">Development Team (60%)</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-icon">
+                            <i class="fas fa-server"></i>
+                        </div>
+                        <div class="summary-amount">£112,500</div>
+                        <div class="summary-label">Technology Infrastructure (15%)</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div class="summary-amount">£112,500</div>
+                        <div class="summary-label">Content & Education (15%)</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-icon">
+                            <i class="fas fa-bullhorn"></i>
+                        </div>
+                        <div class="summary-amount">£75,000</div>
+                        <div class="summary-label">Marketing & Launch (10%)</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Development Team Costs -->
+            <section id="team-costs" class="section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-users-cog"></i>
+                    </div>
+                    <h2 class="section-title">Development Team Costs</h2>
+                </div>
+
+                <div class="controls-panel">
+                    <div class="control-group">
+                        <span style="font-weight: 600; color: var(--primary-blue);">View:</span>
+                        <button class="control-btn active" onclick="showTeamView('core', this)">Core Team</button>
+                        <button class="control-btn" onclick="showTeamView('additional', this)">Additional Resources</button>
+                        <button class="control-btn" onclick="showTeamView('consultants', this)">Consultants</button>
+                    </div>
+                </div>
+
+                <!-- Core Team -->
+                <div id="core-team" class="cost-table-container">
+                    <h3 style="color: var(--primary-blue); margin-bottom: 1rem;">Core Development Team (12 months)</h3>
+                    <table class="cost-table">
+                        <thead>
+                            <tr>
+                                <th>Role</th>
+                                <th>Level</th>
+                                <th>Monthly Rate</th>
+                                <th>Duration</th>
+                                <th>Total Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Technical Lead / CTO</strong></td>
+                                <td>Senior</td>
+                                <td class="amount">£8,000</td>
+                                <td class="duration">12 months</td>
+                                <td class="amount">£96,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Technical Architect</strong></td>
+                                <td>Senior</td>
+                                <td class="amount">£7,000</td>
+                                <td class="duration">8 months</td>
+                                <td class="amount">£56,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Senior React Developer</strong></td>
+                                <td>Senior</td>
+                                <td class="amount">£6,500</td>
+                                <td class="duration">12 months</td>
+                                <td class="amount">£78,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Frontend Developer</strong></td>
+                                <td>Mid-level</td>
+                                <td class="amount">£5,000</td>
+                                <td class="duration">10 months</td>
+                                <td class="amount">£50,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>UI/UX Designer</strong></td>
+                                <td>Senior</td>
+                                <td class="amount">£5,500</td>
+                                <td class="duration">8 months</td>
+                                <td class="amount">£44,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Senior Backend Developer</strong></td>
+                                <td>Senior</td>
+                                <td class="amount">£6,500</td>
+                                <td class="duration">12 months</td>
+                                <td class="amount">£78,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Backend Developer</strong></td>
+                                <td>Mid-level</td>
+                                <td class="amount">£5,000</td>
+                                <td class="duration">10 months</td>
+                                <td class="amount">£50,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>DevOps Engineer</strong></td>
+                                <td>Senior</td>
+                                <td class="amount">£6,000</td>
+                                <td class="duration">8 months</td>
+                                <td class="amount">£48,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Product Manager</strong></td>
+                                <td>Senior</td>
+                                <td class="amount">£6,000</td>
+                                <td class="duration">10 months</td>
+                                <td class="amount">£60,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>QA Engineer</strong></td>
+                                <td>Mid-level</td>
+                                <td class="amount">£4,500</td>
+                                <td class="duration">8 months</td>
+                                <td class="amount">£36,000</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr style="background: var(--light-blue); font-weight: bold;">
+                                <td colspan="4"><strong>Total Core Team Cost</strong></td>
+                                <td class="amount" style="font-size: 1.2rem;">£596,000</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- Additional Resources -->
+                <div id="additional-team" class="cost-table-container hidden">
+                    <h3 style="color: var(--primary-blue); margin-bottom: 1rem;">Additional Development Resources</h3>
+                    <table class="cost-table">
+                        <thead>
+                            <tr>
+                                <th>Service</th>
+                                <th>Description</th>
+                                <th>Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Mobile App Development</strong></td>
+                                <td>React Native specialists for iOS/Android</td>
+                                <td class="amount">£45,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>AI/ML Development</strong></td>
+                                <td>Halal screening algorithm development</td>
+                                <td class="amount">£35,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Security Audit</strong></td>
+                                <td>Third-party security assessment</td>
+                                <td class="amount">£15,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Performance Optimization</strong></td>
+                                <td>Load testing and optimization</td>
+                                <td class="amount">£12,000</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr style="background: var(--light-blue); font-weight: bold;">
+                                <td colspan="2"><strong>Total Additional Resources</strong></td>
+                                <td class="amount" style="font-size: 1.2rem;">£107,000</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- Consultants -->
+                <div id="consultants-team" class="cost-table-container hidden">
+                    <h3 style="color: var(--primary-blue); margin-bottom: 1rem;">Contractor & Consultant Costs</h3>
+                    <table class="cost-table">
+                        <thead>
+                            <tr>
+                                <th>Service</th>
+                                <th>Description</th>
+                                <th>Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Islamic Finance Consultant</strong></td>
+                                <td>Shariah compliance validation</td>
+                                <td class="amount">£25,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Legal & Regulatory</strong></td>
+                                <td>FCA compliance and legal setup</td>
+                                <td class="amount">£20,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Financial Planning</strong></td>
+                                <td>Business model and pricing strategy</td>
+                                <td class="amount">£15,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Data Migration Specialist</strong></td>
+                                <td>Legacy system integration</td>
+                                <td class="amount">£10,000</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr style="background: var(--light-blue); font-weight: bold;">
+                                <td colspan="2"><strong>Total Consulting</strong></td>
+                                <td class="amount" style="font-size: 1.2rem;">£70,000</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div style="background: #f0fdf4; padding: 2rem; border-radius: 15px; margin-top: 2rem; text-align: center;">
+                    <h3 style="color: var(--success-green); margin-bottom: 1rem;">
+                        <i class="fas fa-calculator" style="margin-right: 0.5rem;"></i>
+                        Total Development Team Costs
+                    </h3>
+                    <div style="font-size: 3rem; font-weight: bold; color: var(--success-green);">£773,000</div>
+                    <p style="margin: 1rem 0 0 0; color: var(--warm-gray);">Core Team + Additional Resources + Consulting</p>
+                </div>
+            </section>
+
+            <!-- Content Creation & Education -->
+            <section id="content-creation" class="section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h2 class="section-title">Content Creation & Education</h2>
+                </div>
+
+                <div class="controls-panel">
+                    <div class="control-group">
+                        <span style="font-weight: 600; color: var(--primary-blue);">View:</span>
+                        <button class="control-btn active" onclick="showContentView('video', this)">Video Production</button>
+                        <button class="control-btn" onclick="showContentView('written', this)">Written Content</button>
+                        <button class="control-btn" onclick="showContentView('scholars', this)">Scholar Costs</button>
+                        <button class="control-btn" onclick="showContentView('tools', this)">Production Tools</button>
+                    </div>
+                </div>
+
+                <!-- Video Production -->
+                <div id="video-content" class="cost-table-container">
+                    <h3 style="color: var(--primary-blue); margin-bottom: 1rem;">Video Production</h3>
+                    <table class="cost-table">
+                        <thead>
+                            <tr>
+                                <th>Content Type</th>
+                                <th>Quantity</th>
+                                <th>Cost per Unit</th>
+                                <th>Total Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Fundamental Courses</strong></td>
+                                <td>20 courses</td>
+                                <td class="amount">£2,500</td>
+                                <td class="amount">£50,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Advanced Tutorials</strong></td>
+                                <td>30 videos</td>
+                                <td class="amount">£1,200</td>
+                                <td class="amount">£36,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Live Session Recording</strong></td>
+                                <td>50 sessions</td>
+                                <td class="amount">£300</td>
+                                <td class="amount">£15,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Animated Explainers</strong></td>
+                                <td>15 videos</td>
+                                <td class="amount">£1,800</td>
+                                <td class="amount">£27,000</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr style="background: var(--light-blue); font-weight: bold;">
+                                <td colspan="3"><strong>Total Video Production</strong></td>
+                                <td class="amount" style="font-size: 1.2rem;">£128,000</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- Written Content -->
+                <div id="written-content" class="cost-table-container hidden">
+                    <h3 style="color: var(--primary-blue); margin-bottom: 1rem;">Written Content & Materials</h3>
+                    <table class="cost-table">
+                        <thead>
+                            <tr>
+                                <th>Content Type</th>
+                                <th>Description</th>
+                                <th>Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Course Curricula</strong></td>
+                                <td>Structured learning paths</td>
+                                <td class="amount">£25,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Assessment Materials</strong></td>
+                                <td>Quizzes, tests, certifications</td>
+                                <td class="amount">£15,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>User Guides</strong></td>
+                                <td>Platform documentation</td>
+                                <td class="amount">£8,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Marketing Content</strong></td>
+                                <td>Blog posts, whitepapers</td>
+                                <td class="amount">£12,000</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr style="background: var(--light-blue); font-weight: bold;">
+                                <td colspan="2"><strong>Total Written Content</strong></td>
+                                <td class="amount" style="font-size: 1.2rem;">£60,000</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- Scholar Costs -->
+                <div id="scholars-content" class="cost-table-container hidden">
+                    <h3 style="color: var(--primary-blue); margin-bottom: 1rem;">Scholar & Expert Costs</h3>
+                    <table class="cost-table">
+                        <thead>
+                            <tr>
+                                <th>Service</th>
+                                <th>Description</th>
+                                <th>Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Shariah Board</strong></td>
+                                <td>Islamic finance scholars retainer</td>
+                                <td class="amount">£36,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Content Review</strong></td>
+                                <td>Expert validation of materials</td>
+                                <td class="amount">£18,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Guest Speakers</strong></td>
+                                <td>Industry expert interviews</td>
+                                <td class="amount">£12,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Translation Services</strong></td>
+                                <td>Multi-language content</td>
+                                <td class="amount">£15,000</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr style="background: var(--light-blue); font-weight: bold;">
+                                <td colspan="2"><strong>Total Expert Costs</strong></td>
+                                <td class="amount" style="font-size: 1.2rem;">£81,000</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- Production Tools -->
+                <div id="tools-content" class="cost-table-container hidden">
+                    <h3 style="color: var(--primary-blue); margin-bottom: 1rem;">Content Production Tools</h3>
+                    <table class="cost-table">
+                        <thead>
+                            <tr>
+                                <th>Tool</th>
+                                <th>Description</th>
+                                <th>Annual Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Video Editing Software</strong></td>
+                                <td>Professional editing suite</td>
+                                <td class="amount">£3,600</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Studio Equipment</strong></td>
+                                <td>Cameras, lighting, audio</td>
+                                <td class="amount">£15,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Learning Management System</strong></td>
+                                <td>Content delivery platform</td>
+                                <td class="amount">£12,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Graphic Design Tools</strong></td>
+                                <td>Visual content creation</td>
+                                <td class="amount">£2,400</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr style="background: var(--light-blue); font-weight: bold;">
+                                <td colspan="2"><strong>Total Production Tools</strong></td>
+                                <td class="amount" style="font-size: 1.2rem;">£33,000</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div style="background: #f0fdf4; padding: 2rem; border-radius: 15px; margin-top: 2rem; text-align: center;">
+                    <h3 style="color: var(--success-green); margin-bottom: 1rem;">
+                        <i class="fas fa-play-circle" style="margin-right: 0.5rem;"></i>
+                        Total Content & Education Costs
+                    </h3>
+                    <div style="font-size: 3rem; font-weight: bold; color: var(--success-green);">£302,000</div>
+                    <p style="margin: 1rem 0 0 0; color: var(--warm-gray);">Comprehensive educational content creation</p>
+                </div>
+            </section>
+
+            <!-- Marketing & Customer Acquisition -->
+            <section id="marketing" class="section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-bullhorn"></i>
+                    </div>
+                    <h2 class="section-title">Marketing & Customer Acquisition</h2>
+                </div>
+
+                <div class="controls-panel">
+                    <div class="control-group">
+                        <span style="font-weight: 600; color: var(--primary-blue);">View:</span>
+                        <button class="control-btn active" onclick="showMarketingView('digital', this)">Digital Marketing</button>
+                        <button class="control-btn" onclick="showMarketingView('content', this)">Content Marketing</button>
+                        <button class="control-btn" onclick="showMarketingView('events', this)">Events & PR</button>
+                        <button class="control-btn" onclick="showMarketingView('tech', this)">Marketing Tech</button>
+                    </div>
+                </div>
+
+                <!-- Digital Marketing -->
+                <div id="digital-marketing" class="cost-table-container">
+                    <h3 style="color: var(--primary-blue); margin-bottom: 1rem;">Digital Marketing Budget</h3>
+                    <div style="margin-bottom: 2rem;">
+                        <h4 style="color: var(--warm-gray); margin-bottom: 1rem;">Paid Advertising</h4>
+                        <table class="cost-table">
+                            <thead>
+                                <tr>
+                                    <th>Platform</th>
+                                    <th>Description</th>
+                                    <th>Monthly Budget</th>
+                                    <th>Annual Budget</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Google Ads</strong></td>
+                                    <td>Search and display advertising</td>
+                                    <td class="amount">£5,000</td>
+                                    <td class="amount">£60,000</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Meta Ads</strong></td>
+                                    <td>Facebook and Instagram campaigns</td>
+                                    <td class="amount">£3,000</td>
+                                    <td class="amount">£36,000</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>LinkedIn Ads</strong></td>
+                                    <td>B2B corporate targeting</td>
+                                    <td class="amount">£2,000</td>
+                                    <td class="amount">£24,000</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>YouTube Ads</strong></td>
+                                    <td>Video content promotion</td>
+                                    <td class="amount">£1,500</td>
+                                    <td class="amount">£18,000</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr style="background: var(--light-blue); font-weight: bold;">
+                                    <td colspan="3"><strong>Total Paid Advertising</strong></td>
+                                    <td class="amount" style="font-size: 1.2rem;">£138,000</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Content Marketing -->
+                <div id="content-marketing" class="cost-table-container hidden">
+                    <h3 style="color: var(--primary-blue); margin-bottom: 1rem;">Content Marketing</h3>
+                    <table class="cost-table">
+                        <thead>
+                            <tr>
+                                <th>Activity</th>
+                                <th>Description</th>
+                                <th>Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>SEO Optimization</strong></td>
+                                <td>Search engine optimization</td>
+                                <td class="amount">£18,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Blog Content</strong></td>
+                                <td>Regular educational articles</td>
+                                <td class="amount">£12,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Social Media Management</strong></td>
+                                <td>Community building and engagement</td>
+                                <td class="amount">£15,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Influencer Partnerships</strong></td>
+                                <td>Islamic finance content creators</td>
+                                <td class="amount">£20,000</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr style="background: var(--light-blue); font-weight: bold;">
+                                <td colspan="2"><strong>Total Content Marketing</strong></td>
+                                <td class="amount" style="font-size: 1.2rem;">£65,000</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- Events & PR -->
+                <div id="events-marketing" class="cost-table-container hidden">
+                    <h3 style="color: var(--primary-blue); margin-bottom: 1rem;">Events & PR</h3>
+                    <table class="cost-table">
+                        <thead>
+                            <tr>
+                                <th>Activity</th>
+                                <th>Description</th>
+                                <th>Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Conference Participation</strong></td>
+                                <td>Islamic finance and fintech events</td>
+                                <td class="amount">£25,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Webinar Series</strong></td>
+                                <td>Educational marketing webinars</td>
+                                <td class="amount">£8,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>PR Campaign</strong></td>
+                                <td>Media outreach and press releases</td>
+                                <td class="amount">£15,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Launch Event</strong></td>
+                                <td>Platform launch celebration</td>
+                                <td class="amount">£12,000</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr style="background: var(--light-blue); font-weight: bold;">
+                                <td colspan="2"><strong>Total Events & PR</strong></td>
+                                <td class="amount" style="font-size: 1.2rem;">£60,000</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- Marketing Technology -->
+                <div id="tech-marketing" class="cost-table-container hidden">
+                    <h3 style="color: var(--primary-blue); margin-bottom: 1rem;">Marketing Technology</h3>
+                    <table class="cost-table">
+                        <thead>
+                            <tr>
+                                <th>Tool</th>
+                                <th>Description</th>
+                                <th>Annual Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Marketing Automation</strong></td>
+                                <td>HubSpot or similar platform</td>
+                                <td class="amount">£12,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Analytics Tools</strong></td>
+                                <td>Google Analytics, Mixpanel</td>
+                                <td class="amount">£3,600</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Email Marketing</strong></td>
+                                <td>Campaign management tools</td>
+                                <td class="amount">£2,400</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Social Media Tools</strong></td>
+                                <td>Hootsuite, Buffer scheduling</td>
+                                <td class="amount">£1,800</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr style="background: var(--light-blue); font-weight: bold;">
+                                <td colspan="2"><strong>Total Marketing Technology</strong></td>
+                                <td class="amount" style="font-size: 1.2rem;">£19,800</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div style="background: #fef3c7; padding: 2rem; border-radius: 15px; margin-top: 2rem; text-align: center;">
+                    <h3 style="color: #92400e; margin-bottom: 1rem;">
+                        <i class="fas fa-megaphone" style="margin-right: 0.5rem;"></i>
+                        Total Marketing & Customer Acquisition
+                    </h3>
+                    <div style="font-size: 3rem; font-weight: bold; color: #92400e;">£282,800</div>
+                    <p style="margin: 1rem 0 0 0; color: var(--warm-gray);">Comprehensive customer acquisition strategy</p>
+                </div>
+            </section>
+
+            <!-- Technology Infrastructure -->
+            <section id="infrastructure" class="section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-server"></i>
+                    </div>
+                    <h2 class="section-title">Technology Infrastructure</h2>
+                </div>
+
+                <div class="cost-category-grid">
+                    <div class="cost-category-card" onclick="toggleInfraDetails('aws')">
+                        <div class="category-header">
+                            <div>
+                                <div class="category-title">AWS Infrastructure</div>
+                                <div class="category-amount">£31,200</div>
+                            </div>
+                            <div class="category-percentage">Annual</div>
+                        </div>
+                        <div class="category-description">
+                            Cloud infrastructure including EKS, RDS, DocumentDB, ElastiCache, S3, and CDN services
+                        </div>
+                    </div>
+
+                    <div class="cost-category-card" onclick="toggleInfraDetails('devtest')">
+                        <div class="category-header">
+                            <div>
+                                <div class="category-title">Dev & Testing</div>
+                                <div class="category-amount">£42,000</div>
+                            </div>
+                            <div class="category-percentage">Annual</div>
+                        </div>
+                        <div class="category-description">
+                            Staging environments, CI/CD pipeline, monitoring, and development tools
+                        </div>
+                    </div>
+
+                    <div class="cost-category-card" onclick="toggleInfraDetails('thirdparty')">
+                        <div class="category-header">
+                            <div>
+                                <div class="category-title">Third-Party Services</div>
+                                <div class="category-amount">£47,400</div>
+                            </div>
+                            <div class="category-percentage">Annual</div>
+                        </div>
+                        <div class="category-description">
+                            Financial data APIs, video streaming, payment processing, and communication services
+                        </div>
+                    </div>
+
+                    <div class="cost-category-card" onclick="toggleInfraDetails('software')">
+                        <div class="category-header">
+                            <div>
+                                <div class="category-title">Software Licenses</div>
+                                <div class="category-amount">£12,000</div>
+                            </div>
+                            <div class="category-percentage">Annual</div>
+                        </div>
+                        <div class="category-description">
+                            Development IDEs, design tools, project management, and security software
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Infrastructure Breakdown -->
+                <div id="aws-details" class="cost-table-container hidden">
+                    <h3 style="color: var(--primary-blue); margin-bottom: 1rem;">AWS Services (12 months)</h3>
+                    <table class="cost-table">
+                        <thead>
+                            <tr>
+                                <th>Service</th>
+                                <th>Description</th>
+                                <th>Monthly Cost</th>
+                                <th>Annual Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>EKS Cluster</strong></td>
+                                <td>Kubernetes container orchestration</td>
+                                <td class="amount">£800</td>
+                                <td class="amount">£9,600</td>
+                            </tr>
+                            <tr>
+                                <td><strong>RDS PostgreSQL</strong></td>
+                                <td>Primary database (Multi-AZ)</td>
+                                <td class="amount">£600</td>
+                                <td class="amount">£7,200</td>
+                            </tr>
+                            <tr>
+                                <td><strong>DocumentDB</strong></td>
+                                <td>MongoDB-compatible document store</td>
+                                <td class="amount">£400</td>
+                                <td class="amount">£4,800</td>
+                            </tr>
+                            <tr>
+                                <td><strong>ElastiCache</strong></td>
+                                <td>Redis caching layer</td>
+                                <td class="amount">£300</td>
+                                <td class="amount">£3,600</td>
+                            </tr>
+                            <tr>
+                                <td><strong>S3 Storage</strong></td>
+                                <td>File and media storage</td>
+                                <td class="amount">£200</td>
+                                <td class="amount">£2,400</td>
+                            </tr>
+                            <tr>
+                                <td><strong>CloudFront CDN</strong></td>
+                                <td>Global content delivery</td>
+                                <td class="amount">£150</td>
+                                <td class="amount">£1,800</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Load Balancer</strong></td>
+                                <td>Application load balancing</td>
+                                <td class="amount">£100</td>
+                                <td class="amount">£1,200</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Route 53</strong></td>
+                                <td>DNS management</td>
+                                <td class="amount">£50</td>
+                                <td class="amount">£600</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr style="background: var(--light-blue); font-weight: bold;">
+                                <td colspan="3"><strong>Total AWS Infrastructure</strong></td>
+                                <td class="amount" style="font-size: 1.2rem;">£31,200</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div id="devtest-details" class="cost-table-container hidden">
+                    <h3 style="color: var(--primary-blue); margin-bottom: 1rem;">Development & Testing Infrastructure</h3>
+                    <table class="cost-table">
+                        <thead>
+                            <tr>
+                                <th>Service</th>
+                                <th>Description</th>
+                                <th>Annual Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Staging Environment</strong></td>
+                                <td>Production-like testing environment</td>
+                                <td class="amount">£18,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Development Environment</strong></td>
+                                <td>Developer sandbox environments</td>
+                                <td class="amount">£12,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>CI/CD Pipeline</strong></td>
+                                <td>GitHub Actions and deployment automation</td>
+                                <td class="amount">£3,600</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Monitoring & Logging</strong></td>
+                                <td>DataDog, Sentry, log aggregation</td>
+                                <td class="amount">£8,400</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr style="background: var(--light-blue); font-weight: bold;">
+                                <td colspan="2"><strong>Total Dev/Test Infrastructure</strong></td>
+                                <td class="amount" style="font-size: 1.2rem;">£42,000</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div id="thirdparty-details" class="cost-table-container hidden">
+                    <h3 style="color: var(--primary-blue); margin-bottom: 1rem;">Third-Party Services & APIs</h3>
+                    <table class="cost-table">
+                        <thead>
+                            <tr>
+                                <th>Service</th>
+                                <th>Description</th>
+                                <th>Annual Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Financial Data API</strong></td>
+                                <td>Real-time stock and market data</td>
+                                <td class="amount">£24,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Video Streaming</strong></td>
+                                <td>Educational content delivery</td>
+                                <td class="amount">£9,600</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Payment Processing</strong></td>
+                                <td>Stripe integration and fees</td>
+                                <td class="amount">£6,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Email Service</strong></td>
+                                <td>Transactional email delivery</td>
+                                <td class="amount">£2,400</td>
+                            </tr>
+                            <tr>
+                                <td><strong>SMS Service</strong></td>
+                                <td>OTP and notifications</td>
+                                <td class="amount">£1,800</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Analytics Platform</strong></td>
+                                <td>User behavior tracking</td>
+                                <td class="amount">£3,600</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr style="background: var(--light-blue); font-weight: bold;">
+                                <td colspan="2"><strong>Total Third-Party Services</strong></td>
+                                <td class="amount" style="font-size: 1.2rem;">£47,400</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div id="software-details" class="cost-table-container hidden">
+                    <h3 style="color: var(--primary-blue); margin-bottom: 1rem;">Software Licenses & Tools</h3>
+                    <table class="cost-table">
+                        <thead>
+                            <tr>
+                                <th>Tool</th>
+                                <th>Description</th>
+                                <th>Annual Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Development IDEs</strong></td>
+                                <td>JetBrains, Visual Studio licenses</td>
+                                <td class="amount">£3,000</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Design Tools</strong></td>
+                                <td>Figma, Adobe Creative Suite</td>
+                                <td class="amount">£2,400</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Project Management</strong></td>
+                                <td>Jira, Confluence, Slack</td>
+                                <td class="amount">£1,800</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Security Tools</strong></td>
+                                <td>Vulnerability scanning, code analysis</td>
+                                <td class="amount">£4,800</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr style="background: var(--light-blue); font-weight: bold;">
+                                <td colspan="2"><strong>Total Software Licenses</strong></td>
+                                <td class="amount" style="font-size: 1.2rem;">£12,000</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div style="background: var(--light-blue); padding: 2rem; border-radius: 15px; margin-top: 2rem; text-align: center;">
+                    <h3 style="color: var(--primary-blue); margin-bottom: 1rem;">
+                        <i class="fas fa-cloud" style="margin-right: 0.5rem;"></i>
+                        Total Technology Infrastructure
+                    </h3>
+                    <div style="font-size: 3rem; font-weight: bold; color: var(--primary-blue);">£132,600</div>
+                    <p style="margin: 1rem 0 0 0; color: var(--warm-gray);">Complete technology stack for 12 months</p>
+                </div>
+            </section>
+
+            <!-- Development Phases -->
+            <section id="phases" class="section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <h2 class="section-title">Phase-by-Phase Breakdown</h2>
+                </div>
+
+                <div class="phase-timeline">
+                    <div class="phase-card">
+                        <div class="phase-header">
+                            <div class="phase-title">Phase 1: Foundation (Months 1-3)</div>
+                            <div class="phase-cost">£286,000</div>
+                            <div class="phase-percentage">38%</div>
+                        </div>
+                        <p style="margin-bottom: 2rem; color: var(--light-gray);"><strong>Focus:</strong> Core platform development and team setup</p>
+                        <div class="phase-breakdown">
+                            <div class="breakdown-item">
+                                <div class="breakdown-amount">£186,000</div>
+                                <div class="breakdown-label">Development Team (65%)</div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="breakdown-amount">£35,000</div>
+                                <div class="breakdown-label">Infrastructure Setup (12%)</div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="breakdown-amount">£45,000</div>
+                                <div class="breakdown-label">Initial Content (16%)</div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="breakdown-amount">£20,000</div>
+                                <div class="breakdown-label">Legal & Compliance (7%)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="phase-card">
+                        <div class="phase-header">
+                            <div class="phase-title">Phase 2: Development (Months 4-6)</div>
+                            <div class="phase-cost">£314,000</div>
+                            <div class="phase-percentage">42%</div>
+                        </div>
+                        <p style="margin-bottom: 2rem; color: var(--light-gray);"><strong>Focus:</strong> Feature development and content creation</p>
+                        <div class="phase-breakdown">
+                            <div class="breakdown-item">
+                                <div class="breakdown-amount">£194,000</div>
+                                <div class="breakdown-label">Development Team (62%)</div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="breakdown-amount">£40,000</div>
+                                <div class="breakdown-label">Infrastructure (13%)</div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="breakdown-amount">£65,000</div>
+                                <div class="breakdown-label">Content Production (21%)</div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="breakdown-amount">£15,000</div>
+                                <div class="breakdown-label">Early Marketing (4%)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="phase-card">
+                        <div class="phase-header">
+                            <div class="phase-title">Phase 3: Launch (Months 7-9)</div>
+                            <div class="phase-cost">£265,000</div>
+                            <div class="phase-percentage">35%</div>
+                        </div>
+                        <p style="margin-bottom: 2rem; color: var(--light-gray);"><strong>Focus:</strong> Beta testing and soft launch</p>
+                        <div class="phase-breakdown">
+                            <div class="breakdown-item">
+                                <div class="breakdown-amount">£145,000</div>
+                                <div class="breakdown-label">Development Team (55%)</div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="breakdown-amount">£35,000</div>
+                                <div class="breakdown-label">Infrastructure (13%)</div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="breakdown-amount">£60,000</div>
+                                <div class="breakdown-label">Marketing Campaign (23%)</div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="breakdown-amount">£25,000</div>
+                                <div class="breakdown-label">Content Completion (9%)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="phase-card">
+                        <div class="phase-header">
+                            <div class="phase-title">Phase 4: Scale (Months 10-12)</div>
+                            <div class="phase-cost">£220,000</div>
+                            <div class="phase-percentage">29%</div>
+                        </div>
+                        <p style="margin-bottom: 2rem; color: var(--light-gray);"><strong>Focus:</strong> Full launch and optimization</p>
+                        <div class="phase-breakdown">
+                            <div class="breakdown-item">
+                                <div class="breakdown-amount">£100,000</div>
+                                <div class="breakdown-label">Development Team (45%)</div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="breakdown-amount">£30,000</div>
+                                <div class="breakdown-label">Infrastructure Scaling (14%)</div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="breakdown-amount">£75,000</div>
+                                <div class="breakdown-label">Marketing & Acquisition (34%)</div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="breakdown-amount">£15,000</div>
+                                <div class="breakdown-label">Optimization (7%)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Risk Analysis -->
+            <section id="risks" class="section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h2 class="section-title">Risk Factors & Contingency</h2>
+                </div>
+
+                <div class="risk-grid">
+                    <div class="risk-category">
+                        <div class="risk-title">
+                            <i class="fas fa-code"></i>
+                            Technical Risks
+                        </div>
+                        <div class="risk-items">
+                            <div class="risk-item">
+                                <div class="risk-name">Integration Complexity</div>
+                                <div class="risk-details">
+                                    <span>Medium probability, High impact</span>
+                                    <span class="risk-cost">£25,000</span>
+                                </div>
+                            </div>
+                            <div class="risk-item">
+                                <div class="risk-name">Performance Issues</div>
+                                <div class="risk-details">
+                                    <span>Low probability, High impact</span>
+                                    <span class="risk-cost">£15,000</span>
+                                </div>
+                            </div>
+                            <div class="risk-item">
+                                <div class="risk-name">Security Vulnerabilities</div>
+                                <div class="risk-details">
+                                    <span>Medium probability, Critical impact</span>
+                                    <span class="risk-cost">£20,000</span>
+                                </div>
+                            </div>
+                            <div class="risk-item">
+                                <div class="risk-name">Third-party API Changes</div>
+                                <div class="risk-details">
+                                    <span>High probability, Medium impact</span>
+                                    <span class="risk-cost">£10,000</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="text-align: center; margin-top: 1rem; font-weight: bold; color: var(--danger-red);">
+                            Total Buffer: £70,000
+                        </div>
+                    </div>
+
+                    <div class="risk-category">
+                        <div class="risk-title">
+                            <i class="fas fa-gavel"></i>
+                            Market & Regulatory Risks
+                        </div>
+                        <div class="risk-items">
+                            <div class="risk-item">
+                                <div class="risk-name">Regulatory Changes</div>
+                                <div class="risk-details">
+                                    <span>Medium probability, High impact</span>
+                                    <span class="risk-cost">£30,000</span>
+                                </div>
+                            </div>
+                            <div class="risk-item">
+                                <div class="risk-name">Competitive Response</div>
+                                <div class="risk-details">
+                                    <span>High probability, Medium impact</span>
+                                    <span class="risk-cost">£20,000</span>
+                                </div>
+                            </div>
+                            <div class="risk-item">
+                                <div class="risk-name">Scholar Approval Delays</div>
+                                <div class="risk-details">
+                                    <span>Medium probability, Medium impact</span>
+                                    <span class="risk-cost">£15,000</span>
+                                </div>
+                            </div>
+                            <div class="risk-item">
+                                <div class="risk-name">Market Timing</div>
+                                <div class="risk-details">
+                                    <span>Low probability, High impact</span>
+                                    <span class="risk-cost">£25,000</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="text-align: center; margin-top: 1rem; font-weight: bold; color: var(--danger-red);">
+                            Total Buffer: £90,000
+                        </div>
+                    </div>
+
+                    <div class="risk-category">
+                        <div class="risk-title">
+                            <i class="fas fa-user-times"></i>
+                            Resource Risks
+                        </div>
+                        <div class="risk-items">
+                            <div class="risk-item">
+                                <div class="risk-name">Key Personnel Departure</div>
+                                <div class="risk-details">
+                                    <span>Medium probability, High impact</span>
+                                    <span class="risk-cost">£40,000</span>
+                                </div>
+                            </div>
+                            <div class="risk-item">
+                                <div class="risk-name">Scope Creep</div>
+                                <div class="risk-details">
+                                    <span>High probability, Medium impact</span>
+                                    <span class="risk-cost">£30,000</span>
+                                </div>
+                            </div>
+                            <div class="risk-item">
+                                <div class="risk-name">Extended Timeline</div>
+                                <div class="risk-details">
+                                    <span>Medium probability, High impact</span>
+                                    <span class="risk-cost">£50,000</span>
+                                </div>
+                            </div>
+                            <div class="risk-item">
+                                <div class="risk-name">Quality Issues</div>
+                                <div class="risk-details">
+                                    <span>Low probability, High impact</span>
+                                    <span class="risk-cost">£20,000</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="text-align: center; margin-top: 1rem; font-weight: bold; color: var(--danger-red);">
+                            Total Buffer: £140,000
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: #fef3f2; padding: 2rem; border-radius: 15px; margin-top: 2rem; text-align: center; border: 2px solid var(--danger-red);">
+                    <h3 style="color: var(--danger-red); margin-bottom: 1rem;">
+                        <i class="fas fa-exclamation-triangle" style="margin-right: 0.5rem;"></i>
+                        Total Contingency Budget
+                    </h3>
+                    <div style="font-size: 3rem; font-weight: bold; color: var(--danger-red);">£300,000</div>
+                    <p style="margin: 1rem 0 0 0; color: var(--warm-gray);">40% of base cost for risk mitigation</p>
+                </div>
+            </section>
+
+            <!-- Cost Optimization -->
+            <section id="optimization" class="section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h2 class="section-title">Cost Optimization Strategies</h2>
+                </div>
+
+                <div class="optimization-grid">
+                    <div class="optimization-card">
+                        <div class="optimization-title">
+                            <i class="fas fa-globe"></i>
+                            Offshore Development
+                        </div>
+                        <div class="savings-amount">£170,000</div>
+                        <div style="color: var(--warm-gray); font-size: 0.95rem; line-height: 1.4;">
+                            <p><strong>Offshore Backend Team:</strong> £120,000 savings</p>
+                            <p><strong>Contract UI/UX Design:</strong> £30,000 savings</p>
+                            <p><strong>Offshore QA Testing:</strong> £20,000 savings</p>
+                            <p style="margin-top: 1rem; font-style: italic; color: var(--light-gray);">
+                                Trade-offs: Communication overhead, time zone differences
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="optimization-card">
+                        <div class="optimization-title">
+                            <i class="fas fa-server"></i>
+                            Technology Cost Reduction
+                        </div>
+                        <div class="savings-amount">£38,000</div>
+                        <div style="color: var(--warm-gray); font-size: 0.95rem; line-height: 1.4;">
+                            <p><strong>Open Source Tools:</strong> £15,000 annual savings</p>
+                            <p><strong>Reserved Instances:</strong> £8,000 AWS savings</p>
+                            <p><strong>Serverless Architecture:</strong> £12,000 infrastructure savings</p>
+                            <p><strong>CDN Optimization:</strong> £3,000 delivery savings</p>
+                        </div>
+                    </div>
+
+                    <div class="optimization-card">
+                        <div class="optimization-title">
+                            <i class="fas fa-video"></i>
+                            Content Production Efficiency
+                        </div>
+                        <div class="savings-amount">£60,000</div>
+                        <div style="color: var(--warm-gray); font-size: 0.95rem; line-height: 1.4;">
+                            <p><strong>User-Generated Content:</strong> £25,000 savings</p>
+                            <p><strong>Automated Transcription:</strong> £8,000 savings</p>
+                            <p><strong>Template-Based Design:</strong> £12,000 savings</p>
+                            <p><strong>Bulk Production:</strong> £15,000 batch savings</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: #f0fdf4; padding: 2rem; border-radius: 15px; margin-top: 2rem; text-align: center; border: 2px solid var(--success-green);">
+                    <h3 style="color: var(--success-green); margin-bottom: 1rem;">
+                        <i class="fas fa-piggy-bank" style="margin-right: 0.5rem;"></i>
+                        Total Potential Savings
+                    </h3>
+                    <div style="font-size: 3rem; font-weight: bold; color: var(--success-green);">£268,000</div>
+                    <p style="margin: 1rem 0 0 0; color: var(--warm-gray);">Reduced development cost through optimization</p>
+                </div>
+            </section>
+
+            <!-- ROI Analysis -->
+            <section id="roi" class="section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h2 class="section-title">ROI Analysis</h2>
+                </div>
+
+                <div class="roi-timeline">
+                    <div class="roi-year">
+                        <div class="year-title">Year 1</div>
+                        <div class="roi-metrics">
+                            <div class="roi-metric">
+                                <span class="metric-label">Revenue (Year 1)</span>
+                                <span class="metric-value">£285,000</span>
+                            </div>
+                            <div class="roi-metric">
+                                <span class="metric-label">Operating Expenses</span>
+                                <span class="metric-value negative">£150,000</span>
+                            </div>
+                            <div class="roi-metric">
+                                <span class="metric-label">Net Loss</span>
+                                <span class="metric-value negative">(£615,000)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="roi-year profitable">
+                        <div class="year-title">Year 2</div>
+                        <div class="roi-metrics">
+                            <div class="roi-metric">
+                                <span class="metric-label">Cumulative Investment</span>
+                                <span class="metric-value">£750,000</span>
+                            </div>
+                            <div class="roi-metric">
+                                <span class="metric-label">Revenue (Year 2)</span>
+                                <span class="metric-value positive">£1,200,000</span>
+                            </div>
+                            <div class="roi-metric">
+                                <span class="metric-label">Operating Expenses</span>
+                                <span class="metric-value negative">£480,000</span>
+                            </div>
+                            <div class="roi-metric">
+                                <span class="metric-label">Net Profit</span>
+                                <span class="metric-value positive">£720,000</span>
+                            </div>
+                            <div class="roi-metric" style="border-top: 2px solid var(--success-green); margin-top: 1rem; padding-top: 1rem;">
+                                <span class="metric-label"><strong>Payback Achievement</strong></span>
+                                <span class="metric-value positive"><strong>Month 18</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="roi-year profitable">
+                        <div class="year-title">Year 3</div>
+                        <div class="roi-metrics">
+                            <div class="roi-metric">
+                                <span class="metric-label">Revenue (Year 3)</span>
+                                <span class="metric-value positive">£3,800,000</span>
+                            </div>
+                            <div class="roi-metric">
+                                <span class="metric-label">Operating Expenses</span>
+                                <span class="metric-value negative">£1,140,000</span>
+                            </div>
+                            <div class="roi-metric">
+                                <span class="metric-label">Net Profit</span>
+                                <span class="metric-value positive">£2,660,000</span>
+                            </div>
+                            <div class="roi-metric" style="border-top: 2px solid var(--success-green); margin-top: 1rem; padding-top: 1rem;">
+                                <span class="metric-label"><strong>ROI</strong></span>
+                                <span class="metric-value positive"><strong>354%</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Key Success Metrics -->
+                <div style="margin-top: 3rem;">
+                    <h3 style="color: var(--primary-blue); margin-bottom: 2rem; text-align: center;">Key Success Metrics</h3>
+                    <div class="cost-table-container">
+                        <table class="cost-table">
+                            <thead>
+                                <tr>
+                                    <th>KPI</th>
+                                    <th>Year 1 Target</th>
+                                    <th>Year 2 Target</th>
+                                    <th>Year 3 Target</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Individual Users</strong></td>
+                                    <td class="amount">1,200</td>
+                                    <td class="amount">8,500</td>
+                                    <td class="amount">25,000</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Corporate Clients</strong></td>
+                                    <td class="amount">5</td>
+                                    <td class="amount">25</td>
+                                    <td class="amount">75</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Monthly Recurring Revenue</strong></td>
+                                    <td class="amount">£24K</td>
+                                    <td class="amount">£100K</td>
+                                    <td class="amount">£317K</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Customer Acquisition Cost</strong></td>
+                                    <td class="amount">£45</td>
+                                    <td class="amount">£38</td>
+                                    <td class="amount">£32</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Lifetime Value</strong></td>
+                                    <td class="amount">£890</td>
+                                    <td class="amount">£1,200</td>
+                                    <td class="amount">£1,520</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Break-Even Analysis -->
+                <div style="margin-top: 3rem;">
+                    <h3 style="color: var(--primary-blue); margin-bottom: 2rem; text-align: center;">Break-Even Analysis</h3>
+                    <div class="cost-category-grid">
+                        <div class="cost-category-card" style="border-left-color: var(--danger-red);">
+                            <div class="category-header">
+                                <div>
+                                    <div class="category-title">Conservative</div>
+                                    <div class="category-amount">Month 22</div>
+                                </div>
+                            </div>
+                            <div class="category-description">3,500 users required</div>
+                        </div>
+                        <div class="cost-category-card" style="border-left-color: var(--warning-orange);">
+                            <div class="category-header">
+                                <div>
+                                    <div class="category-title">Base Case</div>
+                                    <div class="category-amount">Month 18</div>
+                                </div>
+                            </div>
+                            <div class="category-description">2,800 users required</div>
+                        </div>
+                        <div class="cost-category-card" style="border-left-color: var(--success-green);">
+                            <div class="category-header">
+                                <div>
+                                    <div class="category-title">Optimistic</div>
+                                    <div class="category-amount">Month 14</div>
+                                </div>
+                            </div>
+                            <div class="category-description">2,200 users required</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Funding Recommendations -->
+            <section class="section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <h2 class="section-title">Funding Recommendations</h2>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin: 2rem 0;">
+                    <div style="background: var(--light-blue); padding: 2rem; border-radius: 15px; border-left: 5px solid var(--primary-blue);">
+                        <h4 style="color: var(--primary-blue); margin-bottom: 1rem;">Funding Strategy</h4>
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-seedling" style="color: var(--success-green);"></i>
+                                <span><strong>Seed Round:</strong> £750,000 for initial development</span>
+                            </li>
+                            <li style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-bridge" style="color: var(--warning-orange);"></i>
+                                <span><strong>Bridge Funding:</strong> £200,000 contingency for extended runway</span>
+                            </li>
+                            <li style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-rocket" style="color: var(--primary-blue);"></i>
+                                <span><strong>Series A:</strong> £2-3M for international expansion (Month 18)</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div style="background: #f0fdf4; padding: 2rem; border-radius: 15px; border-left: 5px solid var(--success-green);">
+                        <h4 style="color: var(--success-green); margin-bottom: 1rem;">Investor Value Proposition</h4>
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="margin-bottom: 1rem; display: flex; align-items: flex-start; gap: 0.5rem;">
+                                <i class="fas fa-chart-line" style="color: var(--success-green); margin-top: 0.2rem;"></i>
+                                <span><strong>Market Size:</strong> £2.4 trillion Islamic finance market</span>
+                            </li>
+                            <li style="margin-bottom: 1rem; display: flex; align-items: flex-start; gap: 0.5rem;">
+                                <i class="fas fa-shield-alt" style="color: var(--success-green); margin-top: 0.2rem;"></i>
+                                <span><strong>Technology Moat:</strong> Proprietary screening and coaching platform</span>
+                            </li>
+                            <li style="margin-bottom: 1rem; display: flex; align-items: flex-start; gap: 0.5rem;">
+                                <i class="fas fa-expand-arrows-alt" style="color: var(--success-green); margin-top: 0.2rem;"></i>
+                                <span><strong>Scalable Model:</strong> B2C and B2B revenue streams</span>
+                            </li>
+                            <li style="display: flex; align-items: flex-start; gap: 0.5rem;">
+                                <i class="fas fa-users" style="color: var(--success-green); margin-top: 0.2rem;"></i>
+                                <span><strong>Strong Team:</strong> Experienced fintech and Islamic finance professionals</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div style="background: #fef3c7; padding: 2rem; border-radius: 15px; border-left: 5px solid var(--accent-gold);">
+                        <h4 style="color: #92400e; margin-bottom: 1rem;">Use of Funds Priority</h4>
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span><strong>Product Development</strong></span>
+                                <span style="background: #92400e; color: white; padding: 0.25rem 0.75rem; border-radius: 15px; font-size: 0.8rem;">60%</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span><strong>Market Validation</strong></span>
+                                <span style="background: #92400e; color: white; padding: 0.25rem 0.75rem; border-radius: 15px; font-size: 0.8rem;">25%</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span><strong>Team Building</strong></span>
+                                <span style="background: #92400e; color: white; padding: 0.25rem 0.75rem; border-radius: 15px; font-size: 0.8rem;">10%</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span><strong>Contingency</strong></span>
+                                <span style="background: #92400e; color: white; padding: 0.25rem 0.75rem; border-radius: 15px; font-size: 0.8rem;">5%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Conclusion -->
+            <section class="section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="fas fa-flag-checkered"></i>
+                    </div>
+                    <h2 class="section-title">Conclusion</h2>
+                </div>
+
+                <p style="font-size: 1.1rem; margin-bottom: 2rem;">The development of the NISBA platform represents a significant but well-justified investment in the growing Islamic finance education market. The total estimated cost of <strong>£750,000</strong> over 12 months will deliver:</p>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin: 3rem 0;">
+                    <div style="background: var(--light-blue); padding: 2rem; border-radius: 15px;">
+                        <h4 style="color: var(--primary-blue); margin-bottom: 1rem;">
+                            <i class="fas fa-trophy" style="margin-right: 0.5rem;"></i>
+                            Key Deliverables
+                        </h4>
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="margin-bottom: 0.75rem; display: flex; align-items: flex-start; gap: 0.5rem;">
+                                <i class="fas fa-check" style="color: var(--success-green); margin-top: 0.2rem;"></i>
+                                <span><strong>Comprehensive Platform:</strong> Web and mobile applications with full feature set</span>
+                            </li>
+                            <li style="margin-bottom: 0.75rem; display: flex; align-items: flex-start; gap: 0.5rem;">
+                                <i class="fas fa-check" style="color: var(--success-green); margin-top: 0.2rem;"></i>
+                                <span><strong>Educational Content:</strong> 200+ hours of expert-created educational materials</span>
+                            </li>
+                            <li style="margin-bottom: 0.75rem; display: flex; align-items: flex-start; gap: 0.5rem;">
+                                <i class="fas fa-check" style="color: var(--success-green); margin-top: 0.2rem;"></i>
+                                <span><strong>Technology Infrastructure:</strong> Scalable, secure, and compliant architecture</span>
+                            </li>
+                            <li style="display: flex; align-items: flex-start; gap: 0.5rem;">
+                                <i class="fas fa-check" style="color: var(--success-green); margin-top: 0.2rem;"></i>
+                                <span><strong>Market Entry:</strong> Beta launch with initial customer base</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div style="background: #f0fdf4; padding: 2rem; border-radius: 15px;">
+                        <h4 style="color: var(--success-green); margin-bottom: 1rem;">
+                            <i class="fas fa-star" style="margin-right: 0.5rem;"></i>
+                            Success Factors
+                        </h4>
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="margin-bottom: 0.75rem; display: flex; align-items: flex-start; gap: 0.5rem;">
+                                <i class="fas fa-check" style="color: var(--success-green); margin-top: 0.2rem;"></i>
+                                <span><strong>Experienced Team:</strong> Industry expertise in Islamic finance and technology</span>
+                            </li>
+                            <li style="margin-bottom: 0.75rem; display: flex; align-items: flex-start; gap: 0.5rem;">
+                                <i class="fas fa-check" style="color: var(--success-green); margin-top: 0.2rem;"></i>
+                                <span><strong>Proven Demand:</strong> Validation through existing content engagement</span>
+                            </li>
+                            <li style="margin-bottom: 0.75rem; display: flex; align-items: flex-start; gap: 0.5rem;">
+                                <i class="fas fa-check" style="color: var(--success-green); margin-top: 0.2rem;"></i>
+                                <span><strong>Scalable Architecture:</strong> Technology foundation for rapid growth</span>
+                            </li>
+                            <li style="display: flex; align-items: flex-start; gap: 0.5rem;">
+                                <i class="fas fa-check" style="color: var(--success-green); margin-top: 0.2rem;"></i>
+                                <span><strong>Clear Revenue Model:</strong> Multiple revenue streams with strong unit economics</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div style="background: #fef3f2; padding: 2rem; border-radius: 15px;">
+                        <h4 style="color: var(--danger-red); margin-bottom: 1rem;">
+                            <i class="fas fa-shield-alt" style="margin-right: 0.5rem;"></i>
+                            Risk Mitigation
+                        </h4>
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="margin-bottom: 0.75rem; display: flex; align-items: flex-start; gap: 0.5rem;">
+                                <i class="fas fa-check" style="color: var(--success-green); margin-top: 0.2rem;"></i>
+                                <span><strong>Conservative Estimates:</strong> Built-in contingency for unforeseen challenges</span>
+                            </li>
+                            <li style="margin-bottom: 0.75rem; display: flex; align-items: flex-start; gap: 0.5rem;">
+                                <i class="fas fa-check" style="color: var(--success-green); margin-top: 0.2rem;"></i>
+                                <span><strong>Phased Approach:</strong> Milestone-based development reduces risk</span>
+                            </li>
+                            <li style="margin-bottom: 0.75rem; display: flex; align-items: flex-start; gap: 0.5rem;">
+                                <i class="fas fa-check" style="color: var(--success-green); margin-top: 0.2rem;"></i>
+                                <span><strong>Market Validation:</strong> Early customer feedback drives product development</span>
+                            </li>
+                            <li style="display: flex; align-items: flex-start; gap: 0.5rem;">
+                                <i class="fas fa-check" style="color: var(--success-green); margin-top: 0.2rem;"></i>
+                                <span><strong>Strong Governance:</strong> Regular review and optimization processes</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div style="background: var(--gradient); color: white; padding: 3rem; border-radius: 20px; text-align: center; margin-top: 3rem;">
+                    <h3 style="font-size: 2rem; margin-bottom: 1rem;">Investment Impact</h3>
+                    <p style="font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.9;">This investment will position NISBA as the leading Islamic finance education platform, with strong potential for international expansion and significant returns for stakeholders.</p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-top: 2rem;">
+                        <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 12px;">
+                            <div style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem;">£2.4T</div>
+                            <div style="opacity: 0.9;">Islamic Finance Market</div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 12px;">
+                            <div style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem;">354%</div>
+                            <div style="opacity: 0.9;">3-Year ROI</div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 12px;">
+                            <div style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem;">18 Months</div>
+                            <div style="opacity: 0.9;">Payback Period</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Document Info -->
+            <section style="background: var(--white); padding: 2rem; border-radius: 15px; box-shadow: var(--shadow); margin-top: 2rem; text-align: center; border-top: 5px solid var(--primary-blue);">
+                <div style="color: var(--light-gray); font-size: 0.9rem;">
+                    <p style="margin-bottom: 0.5rem;"><strong>Document Prepared By:</strong> NISBA Finance Team</p>
+                    <p style="margin-bottom: 0.5rem;"><strong>Date:</strong> January 2025</p>
+                    <p style="margin-bottom: 0.5rem;"><strong>Version:</strong> 1.0</p>
+                    <p style="margin: 0;"><strong>Review Cycle:</strong> Monthly budget reviews and quarterly forecasting</p>
+                </div>
+            </section>
+        </div>
+
+        <!-- Back to Top Button -->
+        <button class="back-to-top" id="backToTop" onclick="scrollToTop()" aria-label="Back to top">
+            <i class="fas fa-arrow-up"></i>
+        </button>
+    </main>
+
+    <script>
+        // Sidebar functionality
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            if (window.innerWidth <= 768) {
+                // Mobile: toggle sidebar with overlay
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('active');
+            } else {
+                // Desktop: sidebar is always visible, no toggle needed
+                // This function doesn't do anything on desktop since sidebar is always open
+                return;
+            }
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            // Only close on mobile
+            if (window.innerWidth <= 768) {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+            }
+        }
+
+        // Update active sidebar item
+        function updateActiveNavItem(sectionId) {
+            const navItems = document.querySelectorAll('.sidebar-nav-item');
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('data-section') === sectionId) {
+                    item.classList.add('active');
+                }
+            });
+        }
+
+        // Mobile menu toggle (legacy function - now calls sidebar)
+        function toggleMobileMenu() {
+            toggleSidebar();
+        }
+
+        // Smooth scrolling to sections
+        function scrollToSection(sectionId) {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                // Close sidebar on mobile after navigation
+                if (window.innerWidth <= 768) {
+                    closeSidebar();
+                }
+                
+                // Update active nav item
+                updateActiveNavItem(sectionId);
+                
+                // Smooth scroll to section
+                element.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        }
+
+        // Scroll to top function
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // Content creation view toggle
+        function showContentView(view) {
+            // Hide all content views
+            document.getElementById('video-content').classList.add('hidden');
+            document.getElementById('written-content').classList.add('hidden');
+            document.getElementById('scholars-content').classList.add('hidden');
+            document.getElementById('tools-content').classList.add('hidden');
+            
+            // Show selected view
+            document.getElementById(view + '-content').classList.remove('hidden');
+            
+            // Update button states
+            const clickedButton = event.target;
+            const buttonGroup = clickedButton.closest('.control-group');
+            const buttons = buttonGroup.querySelectorAll('.control-btn');
+            
+            buttons.forEach(btn => btn.classList.remove('active'));
+            clickedButton.classList.add('active');
+        }
+
+        // Marketing view toggle
+        function showMarketingView(view) {
+            // Hide all marketing views
+            document.getElementById('digital-marketing').classList.add('hidden');
+            document.getElementById('content-marketing').classList.add('hidden');
+            document.getElementById('events-marketing').classList.add('hidden');
+            document.getElementById('tech-marketing').classList.add('hidden');
+            
+            // Show selected view
+            document.getElementById(view + '-marketing').classList.remove('hidden');
+            
+            // Update button states
+            const clickedButton = event.target;
+            const buttonGroup = clickedButton.closest('.control-group');
+            const buttons = buttonGroup.querySelectorAll('.control-btn');
+            
+            buttons.forEach(btn => btn.classList.remove('active'));
+            clickedButton.classList.add('active');
+        }
+
+        // Team cost view toggle
+        function showTeamView(view) {
+            // Hide all team views
+            document.getElementById('core-team').classList.add('hidden');
+            document.getElementById('additional-team').classList.add('hidden');
+            document.getElementById('consultants-team').classList.add('hidden');
+            
+            // Show selected view
+            document.getElementById(view + '-team').classList.remove('hidden');
+            
+            // Update button states
+            const buttons = document.querySelectorAll('.control-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Infrastructure details toggle
+        function toggleInfraDetails(category) {
+            const detailsId = category + '-details';
+            const details = document.getElementById(detailsId);
+            
+            // Hide all other details
+            ['aws-details', 'devtest-details', 'thirdparty-details', 'software-details'].forEach(id => {
+                if (id !== detailsId) {
+                    const element = document.getElementById(id);
+                    if (element) element.classList.add('hidden');
+                }
+            });
+            
+            // Toggle current details
+            if (details) {
+                details.classList.toggle('hidden');
+            }
+        }
+
+        // Animation on scroll
+        function animateOnScroll() {
+            const sections = document.querySelectorAll('.section');
+            const windowHeight = window.innerHeight;
+            
+            sections.forEach(section => {
+                const sectionTop = section.getBoundingClientRect().top;
+                const sectionVisible = 150;
+                
+                if (sectionTop < windowHeight - sectionVisible) {
+                    section.style.opacity = '1';
+                    section.style.transform = 'translateY(0)';
+                }
+            });
+
+            // Show/hide back to top button
+            const backToTop = document.getElementById('backToTop');
+            if (window.pageYOffset > 300) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        }
+
+        // Cost category card interactions
+        function setupCardInteractions() {
+            const cards = document.querySelectorAll('.cost-category-card, .summary-card, .phase-card');
+            
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set initial animation state
+            document.querySelectorAll('.section').forEach(section => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(30px)';
+                section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            });
+
+            // Animate visible sections
+            animateOnScroll();
+            
+            // Add scroll listener
+            window.addEventListener('scroll', animateOnScroll);
+
+            // Setup card interactions
+            setupCardInteractions();
+
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', function(event) {
+                const nav = document.querySelector('.nav');
+                const navLinks = document.getElementById('navLinks');
+                
+                if (!nav.contains(event.target) && navLinks.classList.contains('mobile-open')) {
+                    navLinks.classList.remove('mobile-open');
+                }
+            });
+
+            // Initialize tooltips for interactive elements
+            const interactiveElements = document.querySelectorAll('.cost-category-card');
+            interactiveElements.forEach(element => {
+                element.title = 'Click to view detailed breakdown';
+            });
+        });
+
+        // Dynamic cost calculations (could be expanded for real-time updates)
+        function updateCostCalculations(adjustmentFactor = 1) {
+            const costElements = document.querySelectorAll('.amount, .category-amount, .total-amount');
+            costElements.forEach(element => {
+                const originalValue = parseFloat(element.textContent.replace(/[£,]/g, ''));
+                if (!isNaN(originalValue)) {
+                    const adjustedValue = Math.round(originalValue * adjustmentFactor);
+                    element.textContent = '£' + adjustedValue.toLocaleString();
+                }
+            });
+        }
+
+        // Initialize team cost views
+        function initializeTeamViews() {
+            // Ensure the core team view is visible by default
+            const coreTeam = document.getElementById('core-team');
+            const additionalTeam = document.getElementById('additional-team');
+            const consultantsTeam = document.getElementById('consultants-team');
+            
+            if (coreTeam) coreTeam.classList.remove('hidden');
+            if (additionalTeam) additionalTeam.classList.add('hidden');
+            if (consultantsTeam) consultantsTeam.classList.add('hidden');
+            
+            // Set the first button as active
+            const teamSection = document.getElementById('team-costs');
+            if (teamSection) {
+                const firstButton = teamSection.querySelector('.control-btn');
+                if (firstButton) {
+                    firstButton.classList.add('active');
+                }
+            }
+        }
+
+        // Initialize content views
+        function initializeContentViews() {
+            // Ensure the video content view is visible by default
+            const videoContent = document.getElementById('video-content');
+            const writtenContent = document.getElementById('written-content');
+            const scholarsContent = document.getElementById('scholars-content');
+            const toolsContent = document.getElementById('tools-content');
+            
+            if (videoContent) videoContent.classList.remove('hidden');
+            if (writtenContent) writtenContent.classList.add('hidden');
+            if (scholarsContent) scholarsContent.classList.add('hidden');
+            if (toolsContent) toolsContent.classList.add('hidden');
+        }
+
+        // Initialize marketing views
+        function initializeMarketingViews() {
+            // Ensure the digital marketing view is visible by default
+            const digitalMarketing = document.getElementById('digital-marketing');
+            const contentMarketing = document.getElementById('content-marketing');
+            const eventsMarketing = document.getElementById('events-marketing');
+            const techMarketing = document.getElementById('tech-marketing');
+            
+            if (digitalMarketing) digitalMarketing.classList.remove('hidden');
+            if (contentMarketing) contentMarketing.classList.add('hidden');
+            if (eventsMarketing) eventsMarketing.classList.add('hidden');
+            if (techMarketing) techMarketing.classList.add('hidden');
+        }
+        function exportAnalysis() {
+            // This could generate a PDF or Excel export of the cost analysis
+            alert('Export functionality would generate a PDF report of the cost analysis');
+        }
+
+        // Scroll-based navigation highlighting
+        function highlightActiveSection() {
+            const sections = document.querySelectorAll('.section[id]');
+            const scrollPosition = window.pageYOffset + 200;
+
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.offsetHeight;
+                const sectionId = section.getAttribute('id');
+
+                if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+                    updateActiveNavItem(sectionId);
+                }
+            });
+        }
+
+        // Search functionality for large tables
+        function searchTable(searchTerm, tableId) {
+            const table = document.getElementById(tableId);
+            if (!table) return;
+            
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                const visible = text.includes(searchTerm.toLowerCase());
+                row.style.display = visible ? '' : 'none';
+            });
+        }
+
+        // Keyboard navigation support
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                document.getElementById('navLinks').classList.remove('mobile-open');
+            }
+        });
+
+        // Print optimization
+        window.addEventListener('beforeprint', function() {
+            // Expand all collapsed sections for printing
+            document.querySelectorAll('.hidden').forEach(element => {
+                element.classList.remove('hidden');
+                element.setAttribute('data-was-hidden', 'true');
+            });
+        });
+
+        window.addEventListener('afterprint', function() {
+            // Restore original state after printing
+            document.querySelectorAll('[data-was-hidden]').forEach(element => {
+                element.classList.add('hidden');
+                element.removeAttribute('data-was-hidden');
+            });
+        });
+    </script>
+</body>
+</html>="metric-label">Development Investment</span>
+                                <span class="metric-value negative">£750,000</span>
+                            </div>
+                            <div class="roi-metric">
+                                <span class
