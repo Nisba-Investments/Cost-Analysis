@@ -462,7 +462,7 @@
             flex-shrink: 0;
         }
 
-        /* Pie Chart Style */
+        /* Enhanced Visual Elements */
         .pie-chart-container {
             display: flex;
             justify-content: center;
@@ -482,6 +482,38 @@
             );
             position: relative;
             box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+        }
+
+        .pie-chart:hover {
+            transform: scale(1.05);
+        }
+
+        .pie-chart-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .chart-total {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+        }
+
+        .chart-label {
+            font-size: 0.8rem;
+            color: var(--light-gray);
         }
 
         .pie-legend {
@@ -492,6 +524,15 @@
             display: flex;
             align-items: center;
             margin-bottom: 1rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .legend-item:hover {
+            background: var(--light-blue);
+            transform: translateX(5px);
         }
 
         .legend-color {
@@ -499,6 +540,364 @@
             height: 20px;
             border-radius: 4px;
             margin-right: 1rem;
+        }
+
+        /* Progress Bars */
+        .progress-container {
+            margin: 2rem 0;
+        }
+
+        .progress-item {
+            margin-bottom: 2rem;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .progress-label {
+            font-weight: 600;
+            color: var(--warm-gray);
+            font-size: 1.1rem;
+        }
+
+        .progress-value {
+            font-weight: bold;
+            color: var(--primary-blue);
+            font-size: 1.2rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient);
+            border-radius: 10px;
+            transition: width 2s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Metric Cards with Icons */
+        .metric-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .metric-card {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            border-left: 5px solid var(--primary-blue);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(30, 58, 138, 0.1) 0%, transparent 70%);
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .metric-icon {
+            background: var(--gradient);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-title {
+            font-size: 1.1rem;
+            color: var(--warm-gray);
+            font-weight: 600;
+        }
+
+        .metric-description {
+            color: var(--light-gray);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Interactive Cost Breakdown */
+        .cost-breakdown-interactive {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .cost-category {
+            background: var(--white);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .cost-category:hover {
+            border-color: var(--primary-blue);
+            transform: translateY(-3px);
+        }
+
+        .cost-category.active {
+            border-color: var(--primary-blue);
+            background: var(--light-blue);
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .category-icon {
+            background: var(--gradient);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+        }
+
+        .category-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+        }
+
+        .category-amount {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+        }
+
+        .category-percentage {
+            background: var(--accent-gold);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        .category-breakdown {
+            list-style: none;
+            padding: 0;
+        }
+
+        .category-breakdown li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-breakdown li:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            color: var(--primary-blue);
+        }
+
+        /* Timeline Enhancement */
+        .enhanced-timeline {
+            position: relative;
+            margin: 3rem 0;
+        }
+
+        .timeline-track {
+            position: absolute;
+            left: 30px;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            background: var(--gradient);
+            border-radius: 3px;
+        }
+
+        .timeline-phase {
+            position: relative;
+            margin-bottom: 3rem;
+            padding-left: 80px;
+        }
+
+        .phase-marker {
+            position: absolute;
+            left: 15px;
+            top: 0;
+            width: 36px;
+            height: 36px;
+            background: var(--primary-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1rem;
+            border: 4px solid white;
+            box-shadow: var(--shadow);
+        }
+
+        .phase-content {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            border-left: 5px solid var(--primary-blue);
+        }
+
+        .phase-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .phase-duration {
+            color: var(--light-gray);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .phase-cost {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+        }
+
+        .phase-description {
+            color: var(--warm-gray);
+            line-height: 1.6;
+        }
+
+        /* Risk Assessment Visual */
+        .risk-matrix {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .risk-category-card {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .risk-category-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .risk-category-card.technical {
+            border-top: 5px solid #ef4444;
+        }
+
+        .risk-category-card.market {
+            border-top: 5px solid #f59e0b;
+        }
+
+        .risk-category-card.resource {
+            border-top: 5px solid #8b5cf6;
+        }
+
+        .risk-amount {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .risk-category-card.technical .risk-amount {
+            color: #ef4444;
+        }
+
+        .risk-category-card.market .risk-amount {
+            color: #f59e0b;
+        }
+
+        .risk-category-card.resource .risk-amount {
+            color: #8b5cf6;
+        }
+
+        .risk-title {
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: var(--warm-gray);
+        }
+
+        .risk-description {
+            color: var(--light-gray);
+            font-size: 0.9rem;
         }
 
         /* Mobile Responsiveness */
@@ -656,22 +1055,22 @@
                 </button>
                 <ul class="nav-menu" id="navMenu">
                     <li class="nav-item">
-                        <a href="https://nisba-investments.github.io/Business-Plan/" class="nav-link" target="_blank" rel="noopener noreferrer">
+                        <a href="https://nisba-investments.github.io/Business-Plan/" class="nav-link">
                             <i class="fas fa-file-alt"></i> Business Plan
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="https://nisba-investments.github.io/Executive-Summary/" class="nav-link" target="_blank" rel="noopener noreferrer">
+                        <a href="https://nisba-investments.github.io/Executive-Summary/" class="nav-link">
                             <i class="fas fa-chart-line"></i> Executive Summary
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="https://nisba-investments.github.io/Product-Roadmap/" class="nav-link" target="_blank" rel="noopener noreferrer">
+                        <a href="https://nisba-investments.github.io/Product-Roadmap/" class="nav-link">
                             <i class="fas fa-road"></i> Product Roadmap
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="https://nisba-investments.github.io/Technical-Architecture/" class="nav-link" target="_blank" rel="noopener noreferrer">
+                        <a href="https://nisba-investments.github.io/Technical-Architecture/" class="nav-link">
                             <i class="fas fa-server"></i> Technical Architecture
                         </a>
                     </li>
@@ -754,22 +1153,46 @@
                     <h2 class="section-title">
                         <i class="fas fa-chart-pie"></i> Key Cost Categories
                     </h2>
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-number">£450,000</div>
-                            <div class="stat-label">Development Team (60%)</div>
+                    <div class="metric-cards">
+                        <div class="metric-card">
+                            <div class="metric-header">
+                                <div class="metric-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                            </div>
+                            <div class="metric-value">£450,000</div>
+                            <div class="metric-title">Development Team</div>
+                            <div class="metric-description">60% of total budget - Core development team including senior engineers, designers, and product managers</div>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-number">£112,500</div>
-                            <div class="stat-label">Technology Infrastructure (15%)</div>
+                        <div class="metric-card">
+                            <div class="metric-header">
+                                <div class="metric-icon">
+                                    <i class="fas fa-server"></i>
+                                </div>
+                            </div>
+                            <div class="metric-value">£112,500</div>
+                            <div class="metric-title">Technology Infrastructure</div>
+                            <div class="metric-description">15% of total budget - AWS infrastructure, third-party APIs, and development tools</div>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-number">£112,500</div>
-                            <div class="stat-label">Content & Education (15%)</div>
+                        <div class="metric-card">
+                            <div class="metric-header">
+                                <div class="metric-icon">
+                                    <i class="fas fa-graduation-cap"></i>
+                                </div>
+                            </div>
+                            <div class="metric-value">£112,500</div>
+                            <div class="metric-title">Content & Education</div>
+                            <div class="metric-description">15% of total budget - Educational content creation, scholar partnerships, and production tools</div>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-number">£75,000</div>
-                            <div class="stat-label">Marketing & Launch (10%)</div>
+                        <div class="metric-card">
+                            <div class="metric-header">
+                                <div class="metric-icon">
+                                    <i class="fas fa-bullhorn"></i>
+                                </div>
+                            </div>
+                            <div class="metric-value">£75,000</div>
+                            <div class="metric-title">Marketing & Launch</div>
+                            <div class="metric-description">10% of total budget - Digital marketing campaigns, events, and customer acquisition</div>
                         </div>
                     </div>
                 </div>
@@ -822,40 +1245,49 @@
                     <h2 class="section-title">
                         <i class="fas fa-road"></i> Development Phases
                     </h2>
-                    <div class="timeline">
-                        <div class="timeline-item">
-                            <div class="timeline-marker">1</div>
-                            <div class="timeline-content">
-                                <div class="timeline-title">Phase 1: Foundation (Months 1-3)</div>
-                                <div class="timeline-description">
-                                    Core platform development and team setup - £286,000 (38%)
+                    <div class="enhanced-timeline">
+                        <div class="timeline-track"></div>
+                        <div class="timeline-phase">
+                            <div class="phase-marker">1</div>
+                            <div class="phase-content">
+                                <div class="phase-title">Phase 1: Foundation</div>
+                                <div class="phase-duration">Months 1-3</div>
+                                <div class="phase-cost">£286,000</div>
+                                <div class="phase-description">
+                                    Core platform development and team setup. Focus on MVP development, infrastructure setup, and legal compliance.
                                 </div>
                             </div>
                         </div>
-                        <div class="timeline-item">
-                            <div class="timeline-marker">2</div>
-                            <div class="timeline-content">
-                                <div class="timeline-title">Phase 2: Development (Months 4-6)</div>
-                                <div class="timeline-description">
-                                    Feature development and content creation - £314,000 (42%)
+                        <div class="timeline-phase">
+                            <div class="phase-marker">2</div>
+                            <div class="phase-content">
+                                <div class="phase-title">Phase 2: Development</div>
+                                <div class="phase-duration">Months 4-6</div>
+                                <div class="phase-cost">£314,000</div>
+                                <div class="phase-description">
+                                    Feature development and content creation. Focus on advanced features, educational content, and testing.
                                 </div>
                             </div>
                         </div>
-                        <div class="timeline-item">
-                            <div class="timeline-marker">3</div>
-                            <div class="timeline-content">
-                                <div class="timeline-title">Phase 3: Launch (Months 7-9)</div>
-                                <div class="timeline-description">
-                                    Beta testing and soft launch - £265,000 (35%)
+                        <div class="timeline-phase">
+                            <div class="phase-marker">3</div>
+                            <div class="phase-content">
+                                <div class="phase-title">Phase 3: Launch</div>
+                                <div class="phase-duration">Months 7-9</div>
+                                <div class="phase-cost">£265,000</div>
+                                <div class="phase-description">
+                                    Beta testing and soft launch. Focus on user testing, marketing campaigns, and feedback integration.
                                 </div>
                             </div>
                         </div>
-                        <div class="timeline-item">
-                            <div class="timeline-marker">4</div>
-                            <div class="timeline-content">
-                                <div class="timeline-title">Phase 4: Scale (Months 10-12)</div>
-                                <div class="timeline-description">
-                                    Full launch and optimization - £220,000 (29%)
+                        <div class="timeline-phase">
+                            <div class="phase-marker">4</div>
+                            <div class="phase-content">
+                                <div class="phase-title">Phase 4: Scale</div>
+                                <div class="phase-duration">Months 10-12</div>
+                                <div class="phase-cost">£220,000</div>
+                                <div class="phase-description">
+                                    Full launch and optimization. Focus on public launch, user acquisition, and platform optimization.
                                 </div>
                             </div>
                         </div>
@@ -919,23 +1351,40 @@
                         <i class="fas fa-chart-pie"></i> Budget Allocation
                     </h2>
                     <div class="pie-chart-container">
-                        <div class="pie-chart"></div>
+                        <div class="pie-chart">
+                            <div class="pie-chart-center">
+                                <div class="chart-total">£750K</div>
+                                <div class="chart-label">Total Budget</div>
+                            </div>
+                        </div>
                         <div class="pie-legend">
                             <div class="legend-item">
                                 <div class="legend-color" style="background: #1e3a8a;"></div>
-                                <span><strong>Development Team (60%)</strong> - £450,000</span>
+                                <div>
+                                    <strong>Development Team (60%)</strong><br>
+                                    <span style="color: var(--light-gray);">£450,000</span>
+                                </div>
                             </div>
                             <div class="legend-item">
                                 <div class="legend-color" style="background: #3b82f6;"></div>
-                                <span><strong>Technology Infrastructure (15%)</strong> - £112,500</span>
+                                <div>
+                                    <strong>Technology Infrastructure (15%)</strong><br>
+                                    <span style="color: var(--light-gray);">£112,500</span>
+                                </div>
                             </div>
                             <div class="legend-item">
                                 <div class="legend-color" style="background: #f59e0b;"></div>
-                                <span><strong>Content & Education (15%)</strong> - £112,500</span>
+                                <div>
+                                    <strong>Content & Education (15%)</strong><br>
+                                    <span style="color: var(--light-gray);">£112,500</span>
+                                </div>
                             </div>
                             <div class="legend-item">
                                 <div class="legend-color" style="background: #10b981;"></div>
-                                <span><strong>Marketing & Launch (10%)</strong> - £75,000</span>
+                                <div>
+                                    <strong>Marketing & Launch (10%)</strong><br>
+                                    <span style="color: var(--light-gray);">£75,000</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -943,54 +1392,71 @@
 
                 <div class="section">
                     <h2 class="section-title">
-                        <i class="fas fa-list"></i> Detailed Category Breakdown
+                        <i class="fas fa-list"></i> Interactive Cost Categories
                     </h2>
-                    <div class="card-grid">
-                        <div class="card">
-                            <div class="card-title">
-                                <i class="fas fa-code"></i> Development Team - £450,000
+                    <div class="cost-breakdown-interactive">
+                        <div class="cost-category">
+                            <div class="category-header">
+                                <div class="category-icon">
+                                    <i class="fas fa-code"></i>
+                                </div>
+                                <div class="category-title">Development Team</div>
                             </div>
-                            <ul style="list-style: none; padding: 0;">
-                                <li>• Core Development Team: £596,000</li>
-                                <li>• Specialized Development: £107,000</li>
-                                <li>• Contractors & Consultants: £70,000</li>
-                                <li><strong>Total: £773,000 (allocated portion)</strong></li>
+                            <div class="category-amount">£450,000</div>
+                            <div class="category-percentage">60%</div>
+                            <ul class="category-breakdown">
+                                <li><span>Core Development Team</span> <span>£596,000</span></li>
+                                <li><span>Specialized Development</span> <span>£107,000</span></li>
+                                <li><span>Contractors & Consultants</span> <span>£70,000</span></li>
+                                <li><span>Total Available</span> <span>£773,000</span></li>
                             </ul>
                         </div>
-                        <div class="card">
-                            <div class="card-title">
-                                <i class="fas fa-server"></i> Technology Infrastructure - £112,500
+                        <div class="cost-category">
+                            <div class="category-header">
+                                <div class="category-icon">
+                                    <i class="fas fa-server"></i>
+                                </div>
+                                <div class="category-title">Technology Infrastructure</div>
                             </div>
-                            <ul style="list-style: none; padding: 0;">
-                                <li>• AWS Cloud Services: £31,200</li>
-                                <li>• Dev/Test Infrastructure: £42,000</li>
-                                <li>• Third-party APIs: £47,400</li>
-                                <li>• Software Licenses: £12,000</li>
-                                <li><strong>Total: £132,600</strong></li>
+                            <div class="category-amount">£112,500</div>
+                            <div class="category-percentage">15%</div>
+                            <ul class="category-breakdown">
+                                <li><span>AWS Cloud Services</span> <span>£31,200</span></li>
+                                <li><span>Dev/Test Infrastructure</span> <span>£42,000</span></li>
+                                <li><span>Third-party APIs</span> <span>£47,400</span></li>
+                                <li><span>Software Licenses</span> <span>£12,000</span></li>
                             </ul>
                         </div>
-                        <div class="card">
-                            <div class="card-title">
-                                <i class="fas fa-graduation-cap"></i> Content & Education - £112,500
+                        <div class="cost-category">
+                            <div class="category-header">
+                                <div class="category-icon">
+                                    <i class="fas fa-graduation-cap"></i>
+                                </div>
+                                <div class="category-title">Content & Education</div>
                             </div>
-                            <ul style="list-style: none; padding: 0;">
-                                <li>• Video Production: £128,000</li>
-                                <li>• Written Materials: £60,000</li>
-                                <li>• Scholar & Expert Costs: £81,000</li>
-                                <li>• Production Tools: £33,000</li>
-                                <li><strong>Total: £302,000</strong></li>
+                            <div class="category-amount">£112,500</div>
+                            <div class="category-percentage">15%</div>
+                            <ul class="category-breakdown">
+                                <li><span>Video Production</span> <span>£128,000</span></li>
+                                <li><span>Written Materials</span> <span>£60,000</span></li>
+                                <li><span>Scholar & Expert Costs</span> <span>£81,000</span></li>
+                                <li><span>Production Tools</span> <span>£33,000</span></li>
                             </ul>
                         </div>
-                        <div class="card">
-                            <div class="card-title">
-                                <i class="fas fa-bullhorn"></i> Marketing & Launch - £75,000
+                        <div class="cost-category">
+                            <div class="category-header">
+                                <div class="category-icon">
+                                    <i class="fas fa-bullhorn"></i>
+                                </div>
+                                <div class="category-title">Marketing & Launch</div>
                             </div>
-                            <ul style="list-style: none; padding: 0;">
-                                <li>• Digital Advertising: £138,000</li>
-                                <li>• Content Marketing: £65,000</li>
-                                <li>• Events & PR: £60,000</li>
-                                <li>• Marketing Technology: £19,800</li>
-                                <li><strong>Total: £282,800</strong></li>
+                            <div class="category-amount">£75,000</div>
+                            <div class="category-percentage">10%</div>
+                            <ul class="category-breakdown">
+                                <li><span>Digital Advertising</span> <span>£138,000</span></li>
+                                <li><span>Content Marketing</span> <span>£65,000</span></li>
+                                <li><span>Events & PR</span> <span>£60,000</span></li>
+                                <li><span>Marketing Technology</span> <span>£19,800</span></li>
                             </ul>
                         </div>
                     </div>
@@ -2079,8 +2545,26 @@
 
                 <div class="section">
                     <h2 class="section-title">
-                        <i class="fas fa-exclamation-triangle"></i> Development Risks
+                        <i class="fas fa-exclamation-triangle"></i> Risk Assessment Overview
                     </h2>
+                    <div class="risk-matrix">
+                        <div class="risk-category-card technical">
+                            <div class="risk-amount">£70,000</div>
+                            <div class="risk-title">Technical Risks</div>
+                            <div class="risk-description">Integration complexity, performance issues, security vulnerabilities, API changes</div>
+                        </div>
+                        <div class="risk-category-card market">
+                            <div class="risk-amount">£90,000</div>
+                            <div class="risk-title">Market & Regulatory Risks</div>
+                            <div class="risk-description">Regulatory changes, competitive response, scholar approval delays, market timing</div>
+                        </div>
+                        <div class="risk-category-card resource">
+                            <div class="risk-amount">£140,000</div>
+                            <div class="risk-title">Resource Risks</div>
+                            <div class="risk-description">Key personnel departure, scope creep, extended timeline, quality issues</div>
+                        </div>
+                    </div>
+                </div>
                     
                     <h3 style="color: var(--primary-blue); margin: 2rem 0 1rem 0;">Technical Risks</h3>
                     <div class="table-container">
